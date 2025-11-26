@@ -1,4 +1,4 @@
-# Exercices du TD n°1
+# Exercices du TD n°2
 
 ## Exercice n°1 : reflog HEAD@{n} et
 On va juste revenir sur cette notation relative, utile dans certains cas.
@@ -67,7 +67,7 @@ Regardez le reflog et constatez la différence.
 > Quels autre manières de revenir en arrière auriez vous pu utiliser ?  
 
 ## Exercice n°3 : Première branche, première erreur
-### 1. Créons une brnache et faisons des modifications
+### 1. Créons une branche et faisons des modifications
 ````bash
 git branch -c dev
 mkdir window
@@ -156,12 +156,15 @@ git log master
 git log dev
 ````
 
+Si vous avez à nouveau un conflit après avoir fait le continue, pas grave ! Résolvez à nouveau le conflit et continue de plus belle !  
+Vous pouvez également avoir un dialogue final qui vous demande un message de commit.  
+
 ### 3. Déplaçons nos pointeurs de branche
 ````bash
 git switch dev
 git reset --hard master
 git switch master
-git reset --hard ex02
+git reset --hard ex01
 ````
 > Normalement ORIG_HEAD nous permet d'annuler la dernière grosse modification, comme un rebase. Mais ici comme nous avons ensuite fait deux reset, ORIG_HEAD ne nous permet pas d'annuler le rebase !  
 Sauriez-vous rétablir la situation initiale ?
