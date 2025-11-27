@@ -1,13 +1,30 @@
-# Exercices du TD n°2
+# Exercices du TD n°1
 
-## Exercice n°1 : reflog HEAD@{n} et
+## Mise en place
+> Attention, si vous avez cloné ce dépôt, il faut maintenant en sortir pour créer un répertoire de travail dans lequel nous allons faire tous ces exercices !  
+
+Vous devriez avoir une hiérachie de ce type :
+````
+/td02                       #ce dépôt
+    .git                    #invisible
+    Exercices_TD_01.md      
+    Exercices_TD_02.md      #ce fichier
+    README.md
+/td02_exos                  #là où vous allez faire les exos suivants
+    .git                    #une fois que vous avez initialisé
+````
+
+> Avant de commencer l'exercice n°1, 
+
+Mettez-vous donc dans `/td02_exos` et exécutez
+````
+git init
+````
+## Exercice n°1 : reflog et HEAD@{n}
 On va juste revenir sur cette notation relative, utile dans certains cas.
 
 ### Mise en place
 ````bash
-mkdir td02ex01
-cd td02ex01
-git init
 echo 'Hello world' > main.txt
 git add main.txt
 git commit -m "Ajoute main"
@@ -20,20 +37,36 @@ Oups ! Le message de commit était un peu de travers. Corrigeons !
 ````bash
 git commit -m "Ajoute .gitignore" --amend
 ````
-### 2. Vérifiez que vous pouvez bien encore voir le commit précédent
+### 2. Vérifiez que le commit corrigé existe encore
+Vous pouvez voir que le commit corrigé "n'existe plus" :
+````bash
+git log --oneline
+# L'option --oneline va écrire chaque commit sur une seule ligne
+# Va vous afficher quelque chose comme :
+1441231 (HEAD -> master) Ajoute .gitignore
+699d3cd Ajoute main
+````
+Mais si vous regardez avec `reflog` : 
 ````bash
 git reflog
 # Va vous afficher un truc du genre :
-b5b728d (HEAD -> master) HEAD@{0}: commit (amend): Ajoute .gitignore
-2f5abb2 HEAD@{1}: commit: AJoute gitnore
+1441231 (HEAD -> master) HEAD@{0}: commit (amend): Ajoute .gitignore
+c73123d HEAD@{1}: commit: AJout gitnore
+699d3cd HEAD@{2}: commit (initial): Ajoute main
 ````
-Remarquez ici la notation absolue (les hash en début de ligne)  
-mais aussi la notation relative `HEAD@{1}` qui par exemple vous permet ici de revenir en arrière _dans le temps_.  
+On voit bien ici que notre commit avec son message mal écrit existe toujours.  
+Remarquez au passage la notation absolue (les hash en début de ligne)  
+mais aussi la notation relative `HEAD@{n}` qui par exemple vous permet ici de revenir en arrière _dans le temps_.  
 ````bash
 git rev-parse HEAD~1
 git rev-parse HEAD@{1}
 ````
-Comparez ces valeurs. `HEAD~1` devrait échouer si vous n'avez pas de commit parent. `HEAD@{1}` vous permet de cibler le commit corrigé, qui en fait existe toujours dans votre dépôt.
+>Comparez ces valeurs.  
+
+`HEAD~1` va vous renvoyer le hash du commit parent de HEAD.  
+Ici le commit initial `699d3cd`  
+Au contraire, `HEAD@{1}` vous permet de cibler le commit `c73123d` qui a été corrigé, et normalement n'existe plus.  
+Vous pouvez bien vérifier, il n'est pas présent dans `git log`.  
 
 ### 3. Créons un tag
 ````bash
@@ -42,31 +75,72 @@ git tag ex01
 Ça nous permet de revenir à notre repo propre si on fait des bêtises par la suite.  
 
 ## Exercice n°2 : ORIG_HEAD
-Bien pratique quand on fait une manipulation de l'historique et qu'on veut finalement revenir en arrière !  
+Bien pratique quand on fait une manipulation de l'historique et qu'on veut finalement revenir en arrière ! 
+### Mise en place
+Vous êtes toujours à la racine de votre dépôt, qui contient à ce stade :  
+````
+/td02_exos                  #Vous êtes ici
+    .git
+    .gitignore
+    main.txt
+````
+Et votre historique contient deux commits :  
+````
+1441231 (HEAD -> master) Ajoute .gitignore
+699d3cd Ajoute main
+````
 ### 1. Créons un commit erroné
 ````bash
 touch secrets.txt
 git add .
 git commit -m "Ajoute secrets.txt"
 ````
-Remarquez que secrets.txt a bien été ajouté car vous l'avez créé dans le répertoire racine, pas dans `/secrets`  
+Remarquez que `secrets.txt` a bien été ajouté car vous l'avez créé dans le répertoire racine, pas dans un sous-répertoire `/secrets`, qui aurait été ignoré.    
 Bien sûr c'est une erreur, donc faisons disparaitre ce commit !  
 ### 2. Revenons en arrière
 ````bash
 git reset --hard HEAD~1
 ````
-Le fichier secrets.txt doit avoir disparu.  
+Le fichier `secrets.txt` doit avoir disparu.  
 ### 3. Revenons vers le futur !
+Faisons réapparaitre le fichier `secrets.txt`.  
 ````bash
 git reset --hard ORIG_HEAD
 ````
 Et hop! Comme si rien ne s'était passé.
 Vérifiez le log et constatez la présence du commit "Ajoute secrets.txt"
-Regardez le reflog et constatez la différence.  
+Regardez le reflog et constatez la différence: 
+````git 
+f977168 (HEAD -> master) HEAD@{0}: reset: moving to ORIG_HEAD
+1441231 HEAD@{1}: reset: moving to HEAD~1
+f977168 (HEAD -> master) HEAD@{2}: commit: Ajoute secrets.txt
+1441231 HEAD@{3}: commit (amend): Ajoute .gitignore
+c73123d HEAD@{4}: commit: AJout gitnore
+699d3cd HEAD@{5}: commit (initial): Ajoute main
+````
+Voyez comme la première ligne ne vous donne pas le message d'un commit, mais plutôt l'action qui vous a amené à ce commit. Ici, votre `git reset`.
 
-> Quels autre manières de revenir en arrière auriez vous pu utiliser ?  
+> Quelles autres manières de revenir en arrière auriez vous pu utiliser ?  
+> Si vous faites des essais, ou des allers-retours, remarquez comme votre `git reflog` se remplit en conséquence.
+
+Pour fini l'exercice, déplacez le fichier `secrets.txt` dans un sous-répertoire `/secrets` et assurez-vous d'avoir effacé le commit ajoutant `secrets.txt` à l'historique.
 
 ## Exercice n°3 : Première branche, première erreur
+### Mise en place
+Vous êtes toujours dans votre répertoire principal qui contient désormais :
+````
+/td02_exos                  #Vous êtes ici
+    .git
+    .gitignore
+    main.txt
+    /secrets
+        secrets.txt
+````
+Votre historique doit avoir seulement deux commits :
+````
+1441231 (HEAD -> master) Ajoute .gitignore
+699d3cd Ajoute main
+````
 ### 1. Créons une branche et faisons des modifications
 ````bash
 git branch -c dev
@@ -76,14 +150,17 @@ echo "Ma première feature !" >> main.txt
 git add .
 git commit -m "Ajoute une fenêtre"
 ````
-Super ! Sauf que si vous vérifiez maintenant votre historique avec `git log`, vous devriez constater que votre commit est en fait dans la branche master !  
+Super ! Sauf que si vous vérifiez maintenant votre historique avec `git log`, vous pouvez constater que votre commit (et donc le code qui va avec) est en fait dans la branche master !  
 ### 2. Corrigeons
+On veut que le sous-répertoire n'existe que lorsqu'on est dans la branche `dev`.  
+> Vous pouvez exécuter les commandes ci-dessous dans le sous-répertoire `window`, mais comme on va faire disparaitre le sous-répertoire en question de la branche dev, vous aurez une erreur `fatal: Unable to read current working directory: No such file or directory` après avoir fait votre premier `git reset`. Si ça arrive, remontez à la racine de votre dépôt.
+
 ````bash
 git switch dev
 git reset --hard master
 #les deux branches pointent maintenant au même endroit
 git switch master
-git reset --hard ex01
+git reset --hard dev
 #votre branche master est bien revenue au propre.
 ````
 Vérifiez bien le log de vos branches. Si vous n'êtes pas dans la branche dont vous voulez le log, vous pouvez tapez son nom en argument.  
@@ -156,15 +233,12 @@ git log master
 git log dev
 ````
 
-Si vous avez à nouveau un conflit après avoir fait le continue, pas grave ! Résolvez à nouveau le conflit et continue de plus belle !  
-Vous pouvez également avoir un dialogue final qui vous demande un message de commit.  
-
 ### 3. Déplaçons nos pointeurs de branche
 ````bash
 git switch dev
 git reset --hard master
 git switch master
-git reset --hard ex01
+git reset --hard ex02
 ````
 > Normalement ORIG_HEAD nous permet d'annuler la dernière grosse modification, comme un rebase. Mais ici comme nous avons ensuite fait deux reset, ORIG_HEAD ne nous permet pas d'annuler le rebase !  
 Sauriez-vous rétablir la situation initiale ?
