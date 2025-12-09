@@ -1,4 +1,4 @@
-# Exercices du TD n°1
+# Exercices du TD n°2
 
 ## Mise en place
 > Attention, si vous avez cloné ce dépôt, il faut maintenant en sortir pour créer un répertoire de travail dans lequel nous allons faire tous ces exercices !  
