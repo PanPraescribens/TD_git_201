@@ -20,3 +20,6 @@ else
 fi
 unset color_prompt force_color_prompt
 ```
+
+> Si vous avez des problèmes d'affichage du prompt, vérifiez si vous avez pas une version de git-prompt déjà installée dans votre système sur /usr/lib/git-core/git-sh-prompt
+> Auquel cas, remplacez la ligne `. ~/.git-prompt.sh` par `. /usr/lib/git-core/git-sh-prompt`
